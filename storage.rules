@@ -1,0 +1,13 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Only authenticated users can access receipt files under their own uid folder
+    match /users/{userId}/receipts/{transactionId}/{fileName} {
+      allow read, delete: if request.auth != null && request.auth.uid == userId;
+      allow create, update: if request.auth != null 
+                            && request.auth.uid == userId
+                            && request.resource.size <= 5 * 1024 * 1024
+                            && request.resource.contentType.matches('image/(jpeg|png|webp|jpg)');
+    }
+  }
+}
